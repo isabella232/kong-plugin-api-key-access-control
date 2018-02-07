@@ -1,1 +1,1 @@
-# kong-plugin-boilerplate# use it ad boilderplate
+# kong-plugin-boilerplate
