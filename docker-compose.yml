@@ -2,7 +2,7 @@ version: '2.1'
 
 services:
   kong:
-    build: .
+    image: emarsys/kong-dev-docker:c41a148f4f32051c987f865b782e042d18a4ea50
     depends_on:
       kong-database:
         condition: service_healthy
@@ -26,6 +26,7 @@ services:
       retries: 10
     volumes:
       - .:/kong-plugins
+      - ./spec/kong_tests.conf:/kong/spec/kong_tests.conf
     command: bash -c "/kong/bin/kong migrations up && /kong/bin/kong start -v"
 
   kong-database:
