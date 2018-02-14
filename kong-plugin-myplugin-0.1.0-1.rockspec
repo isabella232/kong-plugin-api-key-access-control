@@ -12,14 +12,14 @@ local pluginName = package:match("^kong%-plugin%-(.+)$")  -- "myPlugin"
 supported_platforms = {"linux", "macosx"}
 source = {
   -- these are initially not required to make it work
-  url = "git://github.com/Mashape/kong_plugin",
+  url = "git@github.com:emartech/kong-plugin-boilerplate.git",
   tag = "0.1.0"
 }
 
 description = {
-  summary = "Kong is a scalable and customizable API Management Layer built on top of Nginx.",
-  homepage = "http://getkong.org",
-  license = "MIT"
+  summary = "Boilerplate for Kong API gateway plugins.",
+  homepage = "https://github.com/emartech/kong-plugin-boilerplate",
+  license = "UNLICENSED"
 }
 
 dependencies = {
