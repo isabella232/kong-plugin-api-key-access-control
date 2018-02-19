@@ -1,31 +1,31 @@
 local helpers = require "spec.helpers"
 local cjson = require "cjson"
 
-describe("Plugin: hello-world (access)", function()
+describe("Plugin: myplugin (access)", function()
   local client
   local admin_client
   local dev_env = {
-    custom_plugins = 'hello-world'
+    custom_plugins = 'myplugin'
   }
 
   local plugin
   local api_id
 
   setup(function()
-      assert(helpers.start_kong(dev_env))
 
-      local api1 = assert(helpers.dao.apis:insert {request_host = "test1.com", upstream_url = "http://mockbin.com"})
+      local api1 = assert(helpers.dao.apis:insert {name = "test-api", hosts = {"test1.com"}, upstream_url = "http://mockbin.com"})
 
       api_id = api1.id
 
       plugin = assert(helpers.dao.plugins:insert {
-        api_id = api1.id,
-        name = "hello-world",
-        config = {
-          say_hello = true
-        }
+          api_id = api1.id,
+          name = "myplugin",
+          config = {
+              say_hello = true
+          }
       })
-    end)
+      assert(helpers.start_kong(dev_env))
+  end)
 
     teardown(function()
       helpers.stop_kong(nil)
@@ -44,12 +44,13 @@ describe("Plugin: hello-world (access)", function()
       it("registered the plugin globally", function()
         local res = assert(admin_client:send {
           method = "GET",
-          path = "/plugins/enabled",
+          path = "/plugins/" .. plugin.id,
         })
         local body = assert.res_status(200, res)
         local json = cjson.decode(body)
-        assert.is_table(json.enabled_plugins)
-        assert.is_not.falsy(json.enabled_plugins['hello-world'])
+
+        assert.is_table(json)
+        assert.is_not.falsy(json.enabled)
       end)
 
       it("registered the plugin for the api", function()
@@ -76,7 +77,7 @@ describe("Plugin: hello-world (access)", function()
         assert.res_status(200, res)
         assert.response(res).has.header("Hello-World")
         local header_value = res.headers["Hello-World"]
-        assert.is_equal("Hello World!!!", header_value)
+        assert.is_equal("Hey!", header_value)
       end)
     end)
 

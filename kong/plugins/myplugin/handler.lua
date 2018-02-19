@@ -1,25 +1,24 @@
 local BasePlugin = require "kong.plugins.base_plugin"
--- local access = require "kong.plugins.hello-world.access"
 
-local HelloWorldHandler = BasePlugin:extend()
+local MypluginHandler = BasePlugin:extend()
 
-HelloWorldHandler.PRIORITY = 2000
+MypluginHandler.PRIORITY = 2000
 
-function HelloWorldHandler:new()
-  HelloWorldHandler.super.new(self, "hello-world")
+function MypluginHandler:new()
+  MypluginHandler.super.new(self, "myplugin")
 end
 
-function HelloWorldHandler:access(conf)
-  HelloWorldHandler.super.access(self)
+function MypluginHandler:access(conf)
+  MypluginHandler.super.access(self)
 
   if conf.say_hello then
-    ngx.log(ngx.ERR, "============ Hello World! ============")
-    ngx.header["Hello-World"] = "Hello World!!!"
+    ngx.log(ngx.ERR, "============ Hey World! ============")
+    ngx.header["Hello-World"] = "Hey!"
   else
     ngx.log(ngx.ERR, "============ Bye World! ============")
-    ngx.header["Hello-World"] = "Bye World!!!"
+    ngx.header["Hello-World"] = "Bye!"
   end
 
 end
 
-return HelloWorldHandler
+return MypluginHandler

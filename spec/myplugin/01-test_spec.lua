@@ -1,7 +1,7 @@
 
-local plugin_handler = require "kong.plugins.hello-world.handler"
+local plugin_handler = require "kong.plugins.myplugin.handler"
 
-describe("hello-world plugin", function()
+describe("myplugin plugin", function()
   local old_ngx = _G.ngx
   -- local stubbed_ndx = nil
   local mock_config
@@ -38,11 +38,11 @@ describe("hello-world plugin", function()
 
     it("adds the correct header value of Hello World!!!", function()
       assert.is_not.falsy(ngx.header['Hello-World'])
-      assert.is_equal("Hello World!!!", ngx.header['Hello-World'])
+      assert.is_equal("Hey!", ngx.header['Hello-World'])
     end)
 
     it("calls ngx.log", function()
-      assert.stub(ngx.log).was.called_with("ERROR:", "============ Hello World! ============")
+      assert.stub(ngx.log).was.called_with("ERROR:", "============ Hey World! ============")
     end)
   end)
 
@@ -56,7 +56,7 @@ describe("hello-world plugin", function()
 
     it("adds the correct header value of Bye World!!!", function()
       assert.is_not.falsy(ngx.header['Hello-World'])
-      assert.is_equal("Bye World!!!", ngx.header['Hello-World'])
+      assert.is_equal("Bye!", ngx.header['Hello-World'])
     end)
 
     it("calls ngx.log", function()
