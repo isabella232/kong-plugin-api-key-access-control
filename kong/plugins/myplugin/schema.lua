@@ -1,11 +1,6 @@
 return {
-  no_consumer = false, -- this plugin is available on APIs as well as on Consumers,
+  no_consumer = true,
   fields = {
-    -- Describe your plugin's configuration's schema here.
-    
-  },
-  self_check = function(schema, plugin_t, dao, is_updating)
-    -- perform any custom verification
-    return true
-  end
+    say_hello = { type = "boolean", default = true }
+  }
 }
