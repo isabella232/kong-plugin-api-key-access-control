@@ -2,6 +2,9 @@ FROM kong:0.12.1
 
 RUN yum install -y gcc git unzip postgresql
 
+RUN unlink /etc/localtime
+RUN ln -s /usr/share/zoneinfo/CET /etc/localtime
+
 ENV PATH=$PATH:/usr/local/bin:/usr/local/openresty/bin:/opt/stap/bin:/usr/local/stapxx:/usr/local/openresty/nginx/sbin
 
 RUN git clone https://github.com/Kong/kong
