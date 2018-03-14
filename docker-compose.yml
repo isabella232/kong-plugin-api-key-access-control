@@ -33,7 +33,7 @@ services:
     command: bash -c "/kong/bin/kong migrations up && /kong/bin/kong start -v"
 
   kong-database:
-    image: postgres:9.5
+    image: postgres:9.6
     environment:
       - POSTGRES_USER=kong
       - POSTGRES_DB=kong
