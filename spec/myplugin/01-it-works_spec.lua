@@ -27,58 +27,58 @@ describe("Plugin: myplugin (access)", function()
       assert(helpers.start_kong(dev_env))
   end)
 
-    teardown(function()
-      helpers.stop_kong(nil)
+  teardown(function()
+    helpers.stop_kong(nil)
+  end)
+
+  before_each(function()
+    client = helpers.proxy_client()
+    admin_client = helpers.admin_client()
+  end)
+  after_each(function()
+    if client then client:close() end
+    if admin_client then admin_client:close() end
+  end)
+
+  describe("Settings", function()
+    it("registered the plugin globally", function()
+      local res = assert(admin_client:send {
+        method = "GET",
+        path = "/plugins/" .. plugin.id,
+      })
+      local body = assert.res_status(200, res)
+      local json = cjson.decode(body)
+
+      assert.is_table(json)
+      assert.is_not.falsy(json.enabled)
     end)
 
-    before_each(function()
-      client = helpers.proxy_client()
-      admin_client = helpers.admin_client()
+    it("registered the plugin for the api", function()
+      local res = assert(admin_client:send {
+        method = "GET",
+        path = "/plugins/" ..plugin.id,
+      })
+      local body = assert.res_status(200, res)
+      local json = cjson.decode(body)
+      assert.is_equal(api_id, json.api_id)
     end)
-    after_each(function()
-      if client then client:close() end
-      if admin_client then admin_client:close() end
+  end)
+
+  describe("Response", function()
+    it("added the header", function()
+      local res = assert(client:send {
+        method = "GET",
+        path = "/request",
+        headers = {
+          ["Host"] = "test1.com"
+        }
+      })
+
+      assert.res_status(200, res)
+      assert.response(res).has.header("Hello-World")
+      local header_value = res.headers["Hello-World"]
+      assert.is_equal("Hey!", header_value)
     end)
-
-    describe("Settings", function()
-      it("registered the plugin globally", function()
-        local res = assert(admin_client:send {
-          method = "GET",
-          path = "/plugins/" .. plugin.id,
-        })
-        local body = assert.res_status(200, res)
-        local json = cjson.decode(body)
-
-        assert.is_table(json)
-        assert.is_not.falsy(json.enabled)
-      end)
-
-      it("registered the plugin for the api", function()
-        local res = assert(admin_client:send {
-          method = "GET",
-          path = "/plugins/" ..plugin.id,
-        })
-        local body = assert.res_status(200, res)
-        local json = cjson.decode(body)
-        assert.is_equal(api_id, json.api_id)
-      end)
-    end)
-
-    describe("Response", function()
-      it("added the header", function()
-        local res = assert(client:send {
-          method = "GET",
-          path = "/request",
-          headers = {
-            ["Host"] = "test1.com"
-          }
-        })
-
-        assert.res_status(200, res)
-        assert.response(res).has.header("Hello-World")
-        local header_value = res.headers["Hello-World"]
-        assert.is_equal("Hey!", header_value)
-      end)
-    end)
+  end)
 
 end)
