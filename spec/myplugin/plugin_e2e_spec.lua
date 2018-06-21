@@ -1,48 +1,43 @@
 local helpers = require "spec.helpers"
 local cjson = require "cjson"
+local TestHelper = require "spec.test_helper"
+
+local function get_response_body(response)
+  local body = assert.res_status(201, response)
+  return cjson.decode(body)
+end
+
+local function setup_test_env()
+  helpers.dao:truncate_tables()
+
+  local service = get_response_body(TestHelper.setup_service())
+  local route = get_response_body(TestHelper.setup_route_for_service(service.id))
+  local plugin = get_response_body(TestHelper.setup_plugin_for_service(service.id, 'myplugin'))
+  local consumer = get_response_body(TestHelper.setup_consumer('TestUser'))
+  return service, route, plugin, consumer
+end
 
 describe("Plugin: myplugin (access)", function()
-  local client
-  local admin_client
-  local dev_env = {
-    custom_plugins = 'myplugin'
-  }
-
+  local service
+  local route
   local plugin
-  local api_id
+  local consumer
+
+  before_each(function()
+    service, route, plugin, consumer = setup_test_env()
+  end)
 
   setup(function()
-
-      local api1 = assert(helpers.dao.apis:insert {name = "test-api", hosts = {"test1.com"}, upstream_url = "http://mockbin.com"})
-
-      api_id = api1.id
-
-      plugin = assert(helpers.dao.plugins:insert {
-          api_id = api1.id,
-          name = "myplugin",
-          config = {
-              say_hello = true
-          }
-      })
-      assert(helpers.start_kong(dev_env))
+    helpers.start_kong({ custom_plugins = 'myplugin' })
   end)
 
   teardown(function()
     helpers.stop_kong(nil)
   end)
 
-  before_each(function()
-    client = helpers.proxy_client()
-    admin_client = helpers.admin_client()
-  end)
-  after_each(function()
-    if client then client:close() end
-    if admin_client then admin_client:close() end
-  end)
-
-  describe("Settings", function()
+  describe("Admin API", function()
     it("registered the plugin globally", function()
-      local res = assert(admin_client:send {
+      local res = assert(helpers.admin_client():send {
         method = "GET",
         path = "/plugins/" .. plugin.id,
       })
@@ -54,7 +49,7 @@ describe("Plugin: myplugin (access)", function()
     end)
 
     it("registered the plugin for the api", function()
-      local res = assert(admin_client:send {
+      local res = assert(helpers.admin_client():send {
         method = "GET",
         path = "/plugins/" ..plugin.id,
       })
@@ -66,7 +61,7 @@ describe("Plugin: myplugin (access)", function()
 
   describe("Response", function()
     it("added the header", function()
-      local res = assert(client:send {
+      local res = assert(helpers.proxy_client():send {
         method = "GET",
         path = "/request",
         headers = {
