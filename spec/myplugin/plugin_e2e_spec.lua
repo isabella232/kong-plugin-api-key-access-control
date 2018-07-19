@@ -18,14 +18,6 @@ local function setup_test_env()
 end
 
 describe("Plugin: myplugin (access)", function()
-  local service
-  local route
-  local plugin
-  local consumer
-
-  before_each(function()
-    service, route, plugin, consumer = setup_test_env()
-  end)
 
   setup(function()
     helpers.start_kong({ custom_plugins = 'myplugin' })
@@ -36,6 +28,12 @@ describe("Plugin: myplugin (access)", function()
   end)
 
   describe("Admin API", function()
+    local service, route, plugin, consumer
+
+    before_each(function()
+      service, route, plugin, consumer = setup_test_env()
+    end)
+
     it("registered the plugin globally", function()
       local res = assert(helpers.admin_client():send {
         method = "GET",
@@ -60,6 +58,12 @@ describe("Plugin: myplugin (access)", function()
   end)
 
   describe("Response", function()
+    local service, route, plugin, consumer
+
+    before_each(function()
+      service, route, plugin, consumer = setup_test_env()
+    end)
+
     it("added the header", function()
       local res = assert(helpers.proxy_client():send {
         method = "GET",
