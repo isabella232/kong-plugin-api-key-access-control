@@ -29,9 +29,9 @@ test: ## Run tests
 	docker-compose run kong bash -c "cd /kong && bin/busted /kong-plugins/spec"
 	docker-compose down
 
-dev-env: ## Creates API (testapi) and consumer (TestUser)
-	bash -c "curl -i -X POST --url http://localhost:8001/apis/ --data 'name=testapi' --data 'upstream_url=http://mockbin.org/request' --data 'uris=/'"
-	bash -c "curl -i -X POST --url http://localhost:8001/apis/testapi/plugins/ --data 'name=myplugin'"
+dev-env: ## Creates a service (myservice) and attaches a plugin to it (myplugin)
+	bash -c "curl -i -X POST --url http://localhost:8001/services/ --data 'name=myservice' --data 'upstream_url=http://mockbin.org/request' --data 'uris=/'"
+	bash -c "curl -i -X POST --url http://localhost:8001/services/myservice/plugins/ --data 'name=myplugin'"
 
 ping: ## Pings kong on localhost:8000
 	bash -c "curl -i http://localhost:8000"
