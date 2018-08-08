@@ -1,6 +1,5 @@
 FROM emarsys/kong-dev-docker:03dcac138951fc470872105917a67b4655205495
 
-RUN luarocks install date 2.1.2-1
 RUN luarocks install classic
 RUN luarocks install kong-lib-logger --deps-mode=none
 
