@@ -8,7 +8,7 @@ source = {
 description = {
   summary = "Boilerplate for Kong API gateway plugins.",
   homepage = "https://github.com/emartech/kong-plugin-boilerplate",
-  license = "UNLICENSED"
+  license = "MIT"
 }
 dependencies = {
   "lua ~> 5.1",
