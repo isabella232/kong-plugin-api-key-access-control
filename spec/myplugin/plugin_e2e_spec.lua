@@ -10,8 +10,8 @@ end
 local function setup_test_env()
   helpers.dao:truncate_tables()
 
-  local service = get_response_body(TestHelper.setup_service())
-  local route = get_response_body(TestHelper.setup_route_for_service(service.id))
+  local service = get_response_body(TestHelper.setup_service('mockbin', 'http://mockbin:8080/request'))
+  local route = get_response_body(TestHelper.setup_route_for_service(service.id, '/test'))
   local plugin = get_response_body(TestHelper.setup_plugin_for_service(service.id, 'myplugin'))
   local consumer = get_response_body(TestHelper.setup_consumer('TestUser'))
   return service, route, plugin, consumer
@@ -67,7 +67,7 @@ describe("Plugin: myplugin (access)", function()
     it("added the header", function()
       local res = assert(helpers.proxy_client():send {
         method = "GET",
-        path = "/request",
+        path = "/test/path",
         headers = {
           ["Host"] = "test1.com"
         }
