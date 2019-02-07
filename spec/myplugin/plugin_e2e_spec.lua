@@ -8,7 +8,7 @@ local function get_response_body(response)
 end
 
 local function setup_test_env()
-  helpers.dao:truncate_tables()
+  helpers.db:truncate()
 
   local service = get_response_body(TestHelper.setup_service('mockbin', 'http://mockbin:8080/request'))
   local route = get_response_body(TestHelper.setup_route_for_service(service.id, '/test'))
@@ -20,7 +20,7 @@ end
 describe("Plugin: myplugin (access)", function()
 
   setup(function()
-    helpers.start_kong({ custom_plugins = 'myplugin' })
+    helpers.start_kong({ plugins = 'myplugin' })
   end)
 
   teardown(function()
