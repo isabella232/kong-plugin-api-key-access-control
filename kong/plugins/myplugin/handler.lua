@@ -12,11 +12,15 @@ function MypluginHandler:access(conf)
   MypluginHandler.super.access(self)
 
   if conf.say_hello then
-    ngx.log(ngx.ERR, "============ Hey World! ============")
-    ngx.header["Hello-World"] = "Hey!"
+    kong.log.debug('Hey!')
+
+    kong.service.request.set_header('X-Upstream-Header', 'Hey Upstream!')
+    kong.response.set_header('X-Downstream-Header', 'Hey Downstream!')
   else
-    ngx.log(ngx.ERR, "============ Bye World! ============")
-    ngx.header["Hello-World"] = "Bye!"
+    kong.log.debug('Bye!')
+
+    kong.service.request.set_header('X-Upstream-Header', 'Bye Upstream!')
+    kong.response.set_header('X-Downstream-Header', 'Bye Downstream!')
   end
 
 end

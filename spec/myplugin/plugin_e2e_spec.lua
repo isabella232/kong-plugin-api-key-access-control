@@ -1,83 +1,148 @@
 local helpers = require "spec.helpers"
 local cjson = require "cjson"
-local TestHelper = require "spec.test_helper"
 
-local function get_response_body(response)
-  local body = assert.res_status(201, response)
-  return cjson.decode(body)
-end
-
-local function setup_test_env()
-  helpers.db:truncate()
-
-  local service = get_response_body(TestHelper.setup_service('mockbin', 'http://mockbin:8080/request'))
-  local route = get_response_body(TestHelper.setup_route_for_service(service.id, '/test'))
-  local plugin = get_response_body(TestHelper.setup_plugin_for_service(service.id, 'myplugin'))
-  local consumer = get_response_body(TestHelper.setup_consumer('TestUser'))
-  return service, route, plugin, consumer
-end
-
-describe("Plugin: myplugin (access)", function()
-
+describe("MyPlugin", function()
   setup(function()
-    helpers.start_kong({ plugins = 'myplugin' })
+    helpers.start_kong({ custom_plugins = 'myplugin' })
   end)
 
   teardown(function()
     helpers.stop_kong(nil)
   end)
 
-  describe("Admin API", function()
-    local service, route, plugin, consumer
-
-    before_each(function()
-      service, route, plugin, consumer = setup_test_env()
-    end)
-
-    it("registered the plugin globally", function()
-      local res = assert(helpers.admin_client():send {
-        method = "GET",
-        path = "/plugins/" .. plugin.id,
-      })
-      local body = assert.res_status(200, res)
-      local json = cjson.decode(body)
-
-      assert.is_table(json)
-      assert.is_not.falsy(json.enabled)
-    end)
-
-    it("registered the plugin for the api", function()
-      local res = assert(helpers.admin_client():send {
-        method = "GET",
-        path = "/plugins/" ..plugin.id,
-      })
-      local body = assert.res_status(200, res)
-      local json = cjson.decode(body)
-      assert.is_equal(api_id, json.api_id)
-    end)
+  before_each(function()
+    helpers.db:truncate()
   end)
 
-  describe("Response", function()
-    local service, route, plugin, consumer
-
-    before_each(function()
-      service, route, plugin, consumer = setup_test_env()
-    end)
-
-    it("added the header", function()
-      local res = assert(helpers.proxy_client():send {
-        method = "GET",
-        path = "/test/path",
+  context('when the "say_hello" flag is true', function()
+    it('should add headers to the proxied request', function()
+      local service_creation_call = assert(helpers.admin_client():send({
+        method = 'POST',
+        path = '/services',
+        body = {
+          name = 'MockBin',
+          url = 'http://mockbin:8080/request'
+        },
         headers = {
-          ["Host"] = "test1.com"
+          ['Content-Type'] = 'application/json'
         }
-      })
+      }))
 
-      assert.res_status(200, res)
-      assert.response(res).has.header("Hello-World")
-      local header_value = res.headers["Hello-World"]
-      assert.is_equal("Hey!", header_value)
+      local service_creation_data = cjson.decode(
+        assert.res_status(201, service_creation_call)
+      )
+
+      local service_id = service_creation_data.id
+
+      local route_creation_call = assert(helpers.admin_client():send({
+        method = 'POST',
+        path = '/services/' .. service_id .. '/routes',
+        body = {
+          paths = {
+            '/test'
+          }
+        },
+        headers = {
+          ['Content-Type'] = 'application/json'
+        }
+      }))
+
+      assert.res_status(201, route_creation_call)
+
+      local plugin_creation_call = assert(helpers.admin_client():send({
+        method = 'POST',
+        path = '/services/' .. service_id .. '/plugins',
+        body = {
+          name = 'myplugin',
+          config = {
+            say_hello = true
+          }
+        },
+        headers = {
+          ['Content-Type'] = 'application/json'
+        }
+      }))
+
+      assert.res_status(201, plugin_creation_call)
+
+      local client_call = assert(helpers.proxy_client():send({
+        method = 'GET',
+        path = '/test'
+      }))
+
+      local client_response_data = cjson.decode(
+        assert.res_status(200, client_call)
+      )
+
+      assert.is_equal('Hey Upstream!', client_response_data.headers['x-upstream-header'])
+      assert.response(client_call).has.header('X-Downstream-Header')
+      assert.is_equal('Hey Downstream!', client_call.headers['X-Downstream-Header'])
     end)
   end)
 
+  context('when the "say_hello" flag is false', function()
+    it('should add headers to the proxied request', function()
+      local service_creation_call = assert(helpers.admin_client():send({
+        method = 'POST',
+        path = '/services',
+        body = {
+          name = 'MockBin',
+          url = 'http://mockbin:8080/request'
+        },
+        headers = {
+          ['Content-Type'] = 'application/json'
+        }
+      }))
+
+      local service_creation_data = cjson.decode(
+        assert.res_status(201, service_creation_call)
+      )
+
+      local service_id = service_creation_data.id
+
+      local route_creation_call = assert(helpers.admin_client():send({
+        method = 'POST',
+        path = '/services/' .. service_id .. '/routes',
+        body = {
+          paths = {
+            '/test'
+          }
+        },
+        headers = {
+          ['Content-Type'] = 'application/json'
+        }
+      }))
+
+      assert.res_status(201, route_creation_call)
+
+      local plugin_creation_call = assert(helpers.admin_client():send({
+        method = 'POST',
+        path = '/services/' .. service_id .. '/plugins',
+        body = {
+          name = 'myplugin',
+          config = {
+            say_hello = false
+          }
+        },
+        headers = {
+          ['Content-Type'] = 'application/json'
+        }
+      }))
+
+      assert.res_status(201, plugin_creation_call)
+
+      local client_call = assert(helpers.proxy_client():send({
+        method = 'GET',
+        path = '/test'
+      }))
+
+      local client_response_data = cjson.decode(
+        assert.res_status(200, client_call)
+      )
+
+      assert.is_equal('Bye Upstream!', client_response_data.headers['x-upstream-header'])
+      assert.response(client_call).has.header('X-Downstream-Header')
+      assert.is_equal('Bye Downstream!', client_call.headers['X-Downstream-Header'])
+    end)
+  end)
 end)
