@@ -1,15 +1,15 @@
 local BasePlugin = require "kong.plugins.base_plugin"
 
-local MypluginHandler = BasePlugin:extend()
+local BoilerplateHandler = BasePlugin:extend()
 
-MypluginHandler.PRIORITY = 2000
+BoilerplateHandler.PRIORITY = 2000
 
-function MypluginHandler:new()
-  MypluginHandler.super.new(self, "myplugin")
+function BoilerplateHandler:new()
+  BoilerplateHandler.super.new(self, "boilerplate")
 end
 
-function MypluginHandler:access(conf)
-  MypluginHandler.super.access(self)
+function BoilerplateHandler:access(conf)
+  BoilerplateHandler.super.access(self)
 
   if conf.say_hello then
     kong.log.debug('Hey!')
@@ -25,4 +25,4 @@ function MypluginHandler:access(conf)
 
 end
 
-return MypluginHandler
+return BoilerplateHandler

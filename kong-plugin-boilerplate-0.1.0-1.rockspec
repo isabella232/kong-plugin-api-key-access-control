@@ -1,4 +1,4 @@
-package = "kong-plugin-myplugin"
+package = "kong-plugin-boilerplate"
 version = "0.1.0-1"
 supported_platforms = {"linux", "macosx"}
 source = {
@@ -18,7 +18,7 @@ dependencies = {
 build = {
   type = "builtin",
   modules = {
-    ["kong.plugins.myplugin.handler"] = "kong/plugins/myplugin/handler.lua",
-    ["kong.plugins.myplugin.schema"] = "kong/plugins/myplugin/schema.lua",
+    ["kong.plugins.boilerplate.handler"] = "kong/plugins/boilerplate/handler.lua",
+    ["kong.plugins.boilerplate.schema"] = "kong/plugins/boilerplate/schema.lua",
   }
 }

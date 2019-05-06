@@ -1,9 +1,9 @@
 local helpers = require "spec.helpers"
 local cjson = require "cjson"
 
-describe("MyPlugin", function()
+describe("Boilerplate", function()
   setup(function()
-    helpers.start_kong({ custom_plugins = 'myplugin' })
+    helpers.start_kong({ custom_plugins = 'boilerplate' })
   end)
 
   teardown(function()
@@ -53,7 +53,7 @@ describe("MyPlugin", function()
         method = 'POST',
         path = '/services/' .. service_id .. '/plugins',
         body = {
-          name = 'myplugin',
+          name = 'boilerplate',
           config = {
             say_hello = true
           }
@@ -119,7 +119,7 @@ describe("MyPlugin", function()
         method = 'POST',
         path = '/services/' .. service_id .. '/plugins',
         body = {
-          name = 'myplugin',
+          name = 'boilerplate',
           config = {
             say_hello = false
           }
