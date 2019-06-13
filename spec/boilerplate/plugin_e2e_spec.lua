@@ -20,7 +20,7 @@ describe("Boilerplate", function()
     helpers.db:truncate()
   end)
 
-  context('when the "say_hello" flag is true', function()
+  context("when the say_hello flag is true", function()
 
     local service
 
@@ -33,7 +33,7 @@ describe("Boilerplate", function()
       kong_sdk.routes:create_for_service(service.id, "/test")
     end)
 
-    it('should add headers to the proxied request', function()
+    it("should add headers to the proxied request", function()
       kong_sdk.plugins:create({
         service_id = service.id,
         name = "boilerplate",
@@ -48,12 +48,12 @@ describe("Boilerplate", function()
       })
 
       assert.are.equal(200, response.status)
-      assert.is_equal('Hey Upstream!', response.body.headers['x-upstream-header'])
-      assert.is_equal('Hey Downstream!', response.headers['X-Downstream-Header'])
+      assert.is_equal("Hey Upstream!", response.body.headers["x-upstream-header"])
+      assert.is_equal("Hey Downstream!", response.headers["X-Downstream-Header"])
     end)
   end)
 
-  context('when the "say_hello" flag is false', function()
+  context("when the say_hello flag is false", function()
 
     local service
 
@@ -66,7 +66,7 @@ describe("Boilerplate", function()
       kong_sdk.routes:create_for_service(service.id, "/test")
     end)
 
-    it('should add headers to the proxied request', function()
+    it("should add headers to the proxied request", function()
       kong_sdk.plugins:create({
         service_id = service.id,
         name = "boilerplate",
@@ -81,8 +81,8 @@ describe("Boilerplate", function()
       })
 
       assert.are.equal(200, response.status)
-      assert.is_equal('Bye Upstream!', response.body.headers['x-upstream-header'])
-      assert.is_equal('Bye Downstream!', response.headers['X-Downstream-Header'])
+      assert.is_equal("Bye Upstream!", response.body.headers["x-upstream-header"])
+      assert.is_equal("Bye Downstream!", response.headers["X-Downstream-Header"])
     end)
   end)
 end)
