@@ -7,7 +7,9 @@ ApiKeyAccessControlHandler.PRIORITY = 950
 local function compose_rule_from_context(api_key)
   local method = kong.request.get_method()
   local path = kong.request.get_path()
-  return table.concat({api_key, method, path}, " ")
+  local query = kong.request.get_raw_query()
+  local uri = query ~= "" and table.concat({path, query}, "?") or path
+  return table.concat({api_key, method, uri}, " ")
 end
 
 local function is_key_in_list_of_keys(key, list_of_keys)

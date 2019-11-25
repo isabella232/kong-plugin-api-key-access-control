@@ -153,6 +153,27 @@ describe("ApiKeyAccessControl", function()
 
         assert.are.equal(200, response.status)
       end)
+
+      it("should a handle query parameters", function()
+        kong_sdk.plugins:create({
+          service_id = service.id,
+          name = "api-key-access-control",
+          config = {
+            api_keys = { "some-key" },
+            whitelist = { "some-key GET /test?first=1" }
+          }
+        })
+
+        local response = send_request({
+          method = "GET",
+          path = "/test?first=1",
+          headers = {
+            ["x-credential-username"] = "some-key"
+          }
+        })
+
+        assert.are.equal(200, response.status)
+      end)
     end)
 
   end)
