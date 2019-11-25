@@ -79,4 +79,60 @@ describe("ApiKeyAccessControl", function()
 
   end)
 
+  context("Plugin logic", function()
+    local service
+
+    before_each(function()
+      service = kong_sdk.services:create({
+        name = "test-service",
+        url = "http://mockbin:8080/request"
+      })
+
+      kong_sdk.routes:create_for_service(service.id, "/test")
+    end)
+
+    context("when whitelist is not set", function()
+      it("should deny access for the api key", function()
+        kong_sdk.plugins:create({
+          service_id = service.id,
+          name = "api-key-access-control",
+          config = {
+            api_keys = { "some-key" }
+          }
+        })
+
+        local response = send_request({
+          method = "GET",
+          path = "/test",
+          headers = {
+            ["x-credential-username"] = "some-key"
+          }
+        })
+
+        assert.are.equal(403, response.status)
+      end)
+
+      it("should allow access for the api key", function()
+        kong_sdk.plugins:create({
+          service_id = service.id,
+          name = "api-key-access-control",
+          config = {
+            api_keys = { "some-key" }
+          }
+        })
+
+        local response = send_request({
+          method = "GET",
+          path = "/test",
+          headers = {
+            ["x-credential-username"] = "some-other-key"
+          }
+        })
+
+        assert.are.equal(200, response.status)
+      end)
+    end)
+
+  end)
+
 end)
