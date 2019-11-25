@@ -1,6 +1,5 @@
 local helpers = require "spec.helpers"
 local kong_client = require "kong_client.spec.test_helpers"
-local dump = require("pl.pretty").dump
 
 describe("ApiKeyAccessControl", function()
   local kong_sdk, send_request, send_admin_request
@@ -126,6 +125,29 @@ describe("ApiKeyAccessControl", function()
           path = "/test",
           headers = {
             ["x-credential-username"] = "some-other-key"
+          }
+        })
+
+        assert.are.equal(200, response.status)
+      end)
+    end)
+
+    context("when whitelist is set", function()
+      it("should allow access for the api key", function()
+        kong_sdk.plugins:create({
+          service_id = service.id,
+          name = "api-key-access-control",
+          config = {
+            api_keys = { "some-key" },
+            whitelist = { "some-key GET /test" }
+          }
+        })
+
+        local response = send_request({
+          method = "GET",
+          path = "/test",
+          headers = {
+            ["x-credential-username"] = "some-key"
           }
         })
 
