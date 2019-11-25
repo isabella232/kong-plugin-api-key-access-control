@@ -28,10 +28,10 @@ test: ## Run tests
 	docker-compose run --rm kong bash -c "cd /kong && kong migrations up && bin/busted /kong-plugins/spec"
 	docker-compose down
 
-dev-env: ## Creates a service (myservice) and attaches a plugin to it (boilerplate)
+dev-env: ## Creates a service (myservice) and attaches a plugin to it (api-key-access-control)
 	bash -c "curl -i -X POST --url http://localhost:8001/services/ --data 'name=testapi' --data 'protocol=http' --data 'host=mockbin' --data 'path=/request'"
 	bash -c "curl -i -X POST --url http://localhost:8001/services/testapi/routes/ --data 'paths[]=/'"
-	bash -c "curl -i -X POST --url http://localhost:8001/services/testapi/plugins/ --data 'name=boilerplate'"
+	bash -c "curl -i -X POST --url http://localhost:8001/services/testapi/plugins/ --data 'name=api-key-access-control'"
 
 ping: ## Pings kong on localhost:8000
 	bash -c "curl -i http://localhost:8000"

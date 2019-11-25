@@ -1,4 +1,4 @@
-# kong-plugin-boilerplate
+# kong-plugin-api-key-access-control
 
 ## Install
  - clone the git repo

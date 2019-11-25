@@ -1,15 +1,15 @@
 local BasePlugin = require "kong.plugins.base_plugin"
 
-local BoilerplateHandler = BasePlugin:extend()
+local ApiKeyAccessControlHandler = BasePlugin:extend()
 
-BoilerplateHandler.PRIORITY = 2000
+ApiKeyAccessControlHandler.PRIORITY = 950
 
-function BoilerplateHandler:new()
-  BoilerplateHandler.super.new(self, "boilerplate")
+function ApiKeyAccessControlHandler:new()
+  ApiKeyAccessControlHandler.super.new(self, "api-key-access-control")
 end
 
-function BoilerplateHandler:access(conf)
-  BoilerplateHandler.super.access(self)
+function ApiKeyAccessControlHandler:access(conf)
+  ApiKeyAccessControlHandler.super.access(self)
 
   if conf.say_hello then
     kong.log.debug("Hey!")
@@ -25,4 +25,4 @@ function BoilerplateHandler:access(conf)
 
 end
 
-return BoilerplateHandler
+return ApiKeyAccessControlHandler
