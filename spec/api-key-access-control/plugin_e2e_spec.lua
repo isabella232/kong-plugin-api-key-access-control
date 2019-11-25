@@ -1,5 +1,6 @@
 local helpers = require "spec.helpers"
 local kong_client = require "kong_client.spec.test_helpers"
+local dump = require("pl.pretty").dump
 
 describe("ApiKeyAccessControl", function()
   local kong_sdk, send_request, send_admin_request
@@ -20,69 +21,62 @@ describe("ApiKeyAccessControl", function()
     helpers.db:truncate()
   end)
 
-  context("when the say_hello flag is true", function()
+  context("Plugin configuration", function()
 
-    local service
-
-    before_each(function()
-      service = kong_sdk.services:create({
-        name = "test-service",
-        url = "http://mockbin:8080/request"
-      })
-
-      kong_sdk.routes:create_for_service(service.id, "/test")
-    end)
-
-    it("should add headers to the proxied request", function()
-      kong_sdk.plugins:create({
-        service_id = service.id,
-        name = "api-key-access-control",
-        config = {
-          say_hello = true
-        }
-      })
-
-      local response = send_request({
-        method = "GET",
-        path = "/test"
-      })
-
-      assert.are.equal(200, response.status)
-      assert.is_equal("Hey Upstream!", response.body.headers["x-upstream-header"])
-      assert.is_equal("Hey Downstream!", response.headers["X-Downstream-Header"])
-    end)
-  end)
-
-  context("when the say_hello flag is false", function()
-
-    local service
+    local consumer
 
     before_each(function()
-      service = kong_sdk.services:create({
-        name = "test-service",
-        url = "http://mockbin:8080/request"
+      consumer = kong_sdk.consumers:create({
+        username = "test-consumer"
       })
-
-      kong_sdk.routes:create_for_service(service.id, "/test")
     end)
 
-    it("should add headers to the proxied request", function()
-      kong_sdk.plugins:create({
-        service_id = service.id,
-        name = "api-key-access-control",
-        config = {
-          say_hello = false
-        }
-      })
+    context("when required parameters are missing", function()
+      it("should fail to add plugin", function()
+        local success, response = pcall(function()
+          kong_sdk.plugins:create({
+            consumer_id = consumer.id,
+            name = "api-key-access-control",
+            config = {}
+          })
+        end)
 
-      local response = send_request({
-        method = "GET",
-        path = "/test"
-      })
-
-      assert.are.equal(200, response.status)
-      assert.is_equal("Bye Upstream!", response.body.headers["x-upstream-header"])
-      assert.is_equal("Bye Downstream!", response.headers["X-Downstream-Header"])
+        assert.is_false(success)
+        assert.are.equal("api_keys is required", response.body["config.api_keys"])
+      end)
     end)
+
+    context("when all required parameters are set", function()
+      it("should fail to add plugin", function()
+        local success, response = pcall(function()
+          kong_sdk.plugins:create({
+            consumer_id = consumer.id,
+            name = "api-key-access-control",
+            config = {
+              api_keys = {}
+            }
+          })
+        end)
+
+        assert.is_false(success)
+        assert.are.equal("you must set at least one api key", response.body["config"])
+      end)
+    end)
+
+    context("when all parameters are set", function()
+      it("should set whitelist parameter's default value", function()
+        local response = kong_sdk.plugins:create({
+          consumer_id = consumer.id,
+          name = "api-key-access-control",
+          config = {
+            api_keys = { "some-key" }
+          }
+        })
+
+        assert.are.same({}, response.config["whitelist"])
+      end)
+    end)
+
   end)
+
 end)
