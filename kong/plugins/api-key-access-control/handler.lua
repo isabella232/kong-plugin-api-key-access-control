@@ -9,6 +9,7 @@ local function compose_rule_from_context(api_key)
   local path = kong.request.get_path()
   local query = kong.request.get_raw_query()
   local uri = query ~= "" and table.concat({path, query}, "?") or path
+
   return table.concat({api_key, method, uri}, " ")
 end
 
@@ -30,6 +31,17 @@ local function is_rule_in_whitelist(rule, whitelist)
   return false
 end
 
+local function has_any_pattern_match(rule, whitelist_lua_pattern)
+  if whitelist_lua_pattern then
+    for i = 1, #whitelist_lua_pattern do
+      if string.match(rule, whitelist_lua_pattern[i]) then
+        return true
+      end
+    end
+  end
+  return false
+end
+
 function ApiKeyAccessControlHandler:new()
   ApiKeyAccessControlHandler.super.new(self, "api-key-access-control")
 end
@@ -42,6 +54,9 @@ function ApiKeyAccessControlHandler:access(config)
 
   if is_key_in_list_of_keys(api_key, config.api_keys) then
     if is_rule_in_whitelist(rule, config.whitelist) then
+      return
+    end
+    if has_any_pattern_match(rule, config.whitelist_lua_pattern) then
       return
     end
     return kong.response.exit(403)

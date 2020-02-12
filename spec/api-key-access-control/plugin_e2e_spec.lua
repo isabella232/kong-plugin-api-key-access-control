@@ -63,7 +63,7 @@ describe("ApiKeyAccessControl", function()
     end)
 
     context("when all parameters are set", function()
-      it("should set whitelist parameter's default value", function()
+      it("should set config default values", function()
         local response = kong_sdk.plugins:create({
           consumer_id = consumer.id,
           name = "api-key-access-control",
@@ -72,7 +72,11 @@ describe("ApiKeyAccessControl", function()
           }
         })
 
-        assert.are.same({}, response.config["whitelist"])
+        assert.are.same({
+          api_keys = { "some-key" },
+          whitelist = {},
+          whitelist_lua_pattern = {}
+        }, response.config)
       end)
     end)
 
@@ -167,6 +171,29 @@ describe("ApiKeyAccessControl", function()
         local response = send_request({
           method = "GET",
           path = "/test?first=1",
+          headers = {
+            ["x-credential-username"] = "some-key"
+          }
+        })
+
+        assert.are.equal(200, response.status)
+      end)
+    end)
+
+    context("when whitelist with pattern matching is set", function()
+      it("should allow request", function()
+        kong_sdk.plugins:create({
+          service_id = service.id,
+          name = "api-key-access-control",
+          config = {
+            api_keys = { "some-key" },
+            whitelist_lua_pattern = { "some%-key GET /test/%d+/asd" }
+          }
+        })
+
+        local response = send_request({
+          method = "GET",
+          path = "/test/123/asd",
           headers = {
             ["x-credential-username"] = "some-key"
           }

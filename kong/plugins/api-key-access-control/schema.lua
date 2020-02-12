@@ -4,7 +4,8 @@ local Errors = require "kong.dao.errors"
 return {
   fields = {
     api_keys = { type = "array", elements = { type = "string" }, required = true },
-    whitelist = { type = "array", elements = { type = "string" }, default = {} }
+    whitelist = { type = "array", elements = { type = "string" }, default = {} },
+    whitelist_lua_pattern = { type = "array", elements = { type = "string" }, default = {} }
   },
   self_check = function(schema, config, _, _)
     if #config.api_keys == 0 then
