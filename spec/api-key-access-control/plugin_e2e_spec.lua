@@ -5,7 +5,7 @@ describe("ApiKeyAccessControl", function()
   local kong_sdk, send_request, send_admin_request
 
   setup(function()
-    helpers.start_kong({ custom_plugins = "api-key-access-control" })
+    helpers.start_kong({ plugins = "api-key-access-control" })
 
     kong_sdk = kong_client.create_kong_client()
     send_request = kong_client.create_request_sender(helpers.proxy_client())
@@ -34,14 +34,16 @@ describe("ApiKeyAccessControl", function()
       it("should fail to add plugin", function()
         local success, response = pcall(function()
           kong_sdk.plugins:create({
-            consumer_id = consumer.id,
+            consumer = {
+              id = consumer.id
+            },
             name = "api-key-access-control",
             config = {}
           })
         end)
 
         assert.is_false(success)
-        assert.are.equal("api_keys is required", response.body["config.api_keys"])
+        assert.are.equal("required field missing", response.body.fields.config.api_keys)
       end)
     end)
 
@@ -49,7 +51,9 @@ describe("ApiKeyAccessControl", function()
       it("should fail to add plugin", function()
         local success, response = pcall(function()
           kong_sdk.plugins:create({
-            consumer_id = consumer.id,
+            consumer = {
+              id = consumer.id
+            },
             name = "api-key-access-control",
             config = {
               api_keys = {}
@@ -58,14 +62,16 @@ describe("ApiKeyAccessControl", function()
         end)
 
         assert.is_false(success)
-        assert.are.equal("you must set at least one api key", response.body["config"])
+        assert.are.equal("length must be at least 1", response.body.fields.config.api_keys)
       end)
     end)
 
     context("when all parameters are set", function()
       it("should set config default values", function()
         local response = kong_sdk.plugins:create({
-          consumer_id = consumer.id,
+          consumer = {
+            id = consumer.id
+          },
           name = "api-key-access-control",
           config = {
             api_keys = { "some-key" }
@@ -88,6 +94,7 @@ describe("ApiKeyAccessControl", function()
     before_each(function()
       service = kong_sdk.services:create({
         name = "test-service",
+        id = "0a7f3795-bc92-43b5-aada-258113b7c4ed",
         url = "http://mockbin:8080/request"
       })
 
@@ -97,7 +104,9 @@ describe("ApiKeyAccessControl", function()
     context("when whitelist is not set", function()
       it("should deny access for the api key", function()
         kong_sdk.plugins:create({
-          service_id = service.id,
+          service = {
+            id = service.id
+          },
           name = "api-key-access-control",
           config = {
             api_keys = { "some-key" }
@@ -117,7 +126,9 @@ describe("ApiKeyAccessControl", function()
 
       it("should allow access for the api key", function()
         kong_sdk.plugins:create({
-          service_id = service.id,
+          service = {
+            id = service.id
+          },
           name = "api-key-access-control",
           config = {
             api_keys = { "some-key" }
@@ -139,7 +150,9 @@ describe("ApiKeyAccessControl", function()
     context("when whitelist is set", function()
       it("should allow access for the api key", function()
         kong_sdk.plugins:create({
-          service_id = service.id,
+          service = {
+            id = service.id
+          },
           name = "api-key-access-control",
           config = {
             api_keys = { "some-key" },
@@ -160,7 +173,9 @@ describe("ApiKeyAccessControl", function()
 
       it("should a handle query parameters", function()
         kong_sdk.plugins:create({
-          service_id = service.id,
+          service = {
+            id = service.id
+          },          
           name = "api-key-access-control",
           config = {
             api_keys = { "some-key" },
@@ -183,7 +198,9 @@ describe("ApiKeyAccessControl", function()
     context("when whitelist with pattern matching is set", function()
       it("should allow request", function()
         kong_sdk.plugins:create({
-          service_id = service.id,
+          service = {
+            id = service.id
+          },
           name = "api-key-access-control",
           config = {
             api_keys = { "some-key" },

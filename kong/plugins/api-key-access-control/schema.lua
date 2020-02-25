@@ -1,16 +1,45 @@
 local Schema = require "kong.db.schema"
-local Errors = require "kong.dao.errors"
+local Errors = require "kong.db.errors"
 
 return {
+  name = "api_key_access_control",
   fields = {
-    api_keys = { type = "array", elements = { type = "string" }, required = true },
-    whitelist = { type = "array", elements = { type = "string" }, default = {} },
-    whitelist_lua_pattern = { type = "array", elements = { type = "string" }, default = {} }
-  },
-  self_check = function(schema, config, _, _)
-    if #config.api_keys == 0 then
-      return false, Errors.schema "you must set at least one api key"
-    end
-    return Schema.new(schema):validate(config)
-  end
+    {
+      config = {
+        type = "record",
+        fields = {
+          {
+            api_keys = { 
+              type = "array", 
+              elements = { 
+                type = "string" 
+              }, 
+              required = true,
+              len_min = 1
+            }
+          },
+          {
+            whitelist = { 
+              type = "array", 
+              elements = { 
+                type = "string" 
+              }, 
+              default = {
+              } 
+            }
+          },
+          {
+            whitelist_lua_pattern = { 
+              type = "array", 
+              elements = { 
+                type = "string" 
+              }, 
+              default = {                
+              } 
+            }
+          }
+        }
+      }
+    }
+  }
 }
