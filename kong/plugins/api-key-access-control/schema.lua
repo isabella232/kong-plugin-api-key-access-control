@@ -2,7 +2,7 @@ local Schema = require "kong.db.schema"
 local Errors = require "kong.db.errors"
 
 return {
-  name = "api_key_access_control",
+  name = "api-key-access-control",
   fields = {
     {
       config = {
