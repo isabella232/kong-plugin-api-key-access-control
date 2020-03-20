@@ -1,9 +1,9 @@
 package = "kong-plugin-api-key-access-control"
-version = "0.2.0-1"
+version = "1.0.0-1"
 supported_platforms = {"linux", "macosx"}
 source = {
   url = "git+https://github.com/emartech/kong-plugin-api-key-access-control.git",
-  tag = "0.2.0"
+  tag = "1.0.0"
 }
 description = {
   summary = "Api key access control plugin for Kong.",
